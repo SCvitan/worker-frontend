@@ -2,19 +2,19 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@radix-ui/react-label";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
-const RegisterForm = () => {
+const LoginForm = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const router = useRouter(); 
+  const router = useRouter();
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:8080/auth/register", {
+      const res = await fetch("http://localhost:8080/auth/login", {
         method: "POST",
         body: JSON.stringify({
           email,
@@ -22,13 +22,22 @@ const RegisterForm = () => {
         }),
         headers: {
           "Content-Type": "application/json",
-        },
-      });
+        }
+      })
 
       if (res.ok) {
-        router.push("/login");
+
+        const token = res.headers.get('Authorization') || res.headers.get('authorization');
+        if (token) {
+          // Storing the token in localStorage
+          localStorage.setItem('jwt', token);
+          // You can also use sessionStorage instead if you prefer
+          // sessionStorage.setItem('jwt', token);
+        }
+
+        router.push("/profile");
       } else {
-        console.error("Registration failed");
+        console.error("Login failed");
       }
     } catch (error) {
       console.error(error);
@@ -52,7 +61,7 @@ const RegisterForm = () => {
         <Label htmlFor="password">Password</Label>
         <Input
           required
-          className="w-full"  
+          className="w-full"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           id="password"
@@ -61,11 +70,11 @@ const RegisterForm = () => {
       </div>
       <div className="w-full">
         <Button className="w-full" size="lg">
-          Register
+          Login
         </Button>
       </div>
     </form>
   );
 };
 
-export default RegisterForm;
+export default LoginForm;
